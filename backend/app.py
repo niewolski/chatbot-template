@@ -12,9 +12,7 @@ load_dotenv(BASE_DIR / ".env")
 
 API_KEY = os.getenv("GEMINI-API")
 MODEL = os.getenv("GEMINI-MODEL")
-SYSTEM_PROMPT = (BASE_DIR / "bot" / "prompts" / "system_instructions.txt").read_text(
-    encoding="utf-8"
-).strip()
+PROMPT_PATH = BASE_DIR / "bot" / "prompts" / "system_instructions.txt"
 
 if not API_KEY or not MODEL:
     raise RuntimeError("Uzupełnij GEMINI-API i GEMINI-MODEL w pliku .env")
@@ -24,6 +22,10 @@ app = Flask(__name__)
 CORS(app)
 
 chats: dict[str, list[types.Content]] = {}
+
+
+def load_system_prompt() -> str:
+    return PROMPT_PATH.read_text(encoding="utf-8").strip()
 
 
 @app.route("/chat", methods=["POST"])
@@ -42,7 +44,9 @@ def chat():
         response = client.models.generate_content(
             model=MODEL,
             contents=history,
-            config=types.GenerateContentConfig(system_instruction=SYSTEM_PROMPT),
+            config=types.GenerateContentConfig(
+                system_instruction=load_system_prompt()
+            ),
         )
         reply = (response.text or "").strip() or "(brak odpowiedzi)"
     except Exception as exc:

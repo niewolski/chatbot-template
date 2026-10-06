@@ -1,4 +1,8 @@
-const API_URL = "http://localhost:5000/chat";
+// Docker (nginx :8080) → /chat; lokalnie → backend :5000
+const API_URL =
+  window.location.port === "8080" || window.location.port === "80"
+    ? "/chat"
+    : "http://localhost:5000/chat";
 
 const messages = document.getElementById("messages");
 const form = document.getElementById("form");
